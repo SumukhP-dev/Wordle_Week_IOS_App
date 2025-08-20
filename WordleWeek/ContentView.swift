@@ -42,6 +42,23 @@ struct ContentView: View {
         [.clear, .clear, .clear, .clear, .clear],
     ]
     
+    @State var currentRow = 1
+    @State var currentGuess = ""
+    
+    func addLetter(_ letter: String) {
+        if currentGuess.count < 5 {
+            currentGuess += letter
+            gridLetters[currentRow][currentGuess.count - 1] = letter
+        }
+    }
+    
+    func deleteLetter() {
+        if currentGuess.count > 0 {
+            gridLetters[currentRow][currentGuess.count - 1] = ""
+            currentGuess.removeLast()
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 8) {
             ForEach(0..<6, id: \.self) { row in
@@ -54,6 +71,74 @@ struct ContentView: View {
                     }
                 }
             }
+            
+            VStack(spacing: 8) {
+                HStack(spacing: 4) {
+                    ForEach(["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"], id: \.self) { letter in
+                        Button(letter) {
+                            addLetter(letter)
+                        }
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.black)
+                        .frame(width: 35, height: 50)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(8)
+                        
+                    }
+                }
+                
+                HStack(spacing: 4) {
+                    ForEach(["A", "S", "D", "F", "G", "H", "J", "K", "L"], id: \.self) { letter in
+                        Button(letter) {
+                            addLetter(letter)
+                        }
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.black)
+                        .frame(width: 35, height: 50)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(8)
+                        
+                    }
+                }
+                
+                
+                HStack(spacing: 4) {
+                    Button("ENTER") {
+                        // Handle enter key
+                    }
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.black)
+                    .frame(width: 60, height: 50)
+                    .background(Color.gray.opacity(0.7))
+                    .cornerRadius(8)
+                    
+                    ForEach(["Z", "X", "C", "V", "B", "N", "M"], id: \.self) { letter in
+                        Button(letter) {
+                            addLetter(letter)
+                        }
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.black)
+                        .frame(width: 35, height: 50)
+                        .background(Color.gray.opacity(0.3))
+                        .cornerRadius(8)
+                    }
+                    
+                    Button("DEL") {
+                        deleteLetter()
+                    }
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.black)
+                    .frame(width: 60, height: 50)
+                    .background(Color.red.opacity(0.7))
+                    .cornerRadius(8)
+                }
+            }
+            .padding(.top, 20)
         }
         .padding()
     }
