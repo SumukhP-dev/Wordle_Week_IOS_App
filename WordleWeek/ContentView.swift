@@ -44,6 +44,23 @@ struct ContentView: View {
     
     @State var currentRow = 1
     @State var currentGuess = ""
+    @State var targetWord = "APPLE"
+    @State var wordList = [
+        "APPLE", "BREAD", "CHAIR", "DREAM", "EARTH",
+        "FLAME", "GRAPE", "HOUSE", "IMAGE", "JUICE",
+        "KNIFE", "LIGHT", "MUSIC", "NORTH", "OCEAN",
+        "PAPER", "QUIET", "RIVER", "STONE", "TABLE",
+        "UNDER", "VALUE", "WATER", "YOUNG", "ZEBRA",
+        "BEACH", "CLOUD", "DANCE", "EAGLE", "FRESH",
+        "GIANT", "HEART", "INDEX", "JOLLY", "KIDDO",
+        "LUCKY", "MAGIC", "NOVEL", "ORBIT", "PLANT",
+        "QUACK", "RADIO", "SMILE", "TRUST", "UNITY",
+        "VOICE", "WHEEL", "EXTRA", "YACHT", "ZESTY",
+        "BADGE", "CRAFT", "DODGE", "ENJOY", "FOCUS",
+        "GUIDE", "HAPPY", "IDEAL", "JUMBO", "KNOWN",
+        "LEMON", "MARCH", "NERDY", "OWNER", "PRIME",
+        "QUOTE", "RAPID", "SPARK", "THICK", "URBAN"
+    ]
     
     func addLetter(_ letter: String) {
         if currentGuess.count < 5 {
@@ -59,8 +76,19 @@ struct ContentView: View {
         }
     }
     
+    func selectRandomWord() {
+        if let randomWord = wordList.randomElement() {
+            targetWord = randomWord
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 8) {
+            Text("Target: \(targetWord)")
+                .font(.headline)
+                .foregroundColor(.red)
+                .padding(.bottom, 10)
+            
             ForEach(0..<6, id: \.self) { row in
                 HStack(spacing: 8) {
                     ForEach(0..<5, id: \.self)  { col in
@@ -141,5 +169,8 @@ struct ContentView: View {
             .padding(.top, 20)
         }
         .padding()
+        .onAppear() {
+            selectRandomWord()
+        }
     }
 }
