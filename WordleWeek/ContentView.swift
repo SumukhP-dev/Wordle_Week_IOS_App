@@ -62,6 +62,24 @@ struct ContentView: View {
         "QUOTE", "RAPID", "SPARK", "THICK", "URBAN"
     ]
     
+    @State var isNewGame = false
+    
+    init() {
+        let randomWord = wordList.randomElement() ?? "WORLD"
+        _targetWord = State(initialValue: randomWord)
+        _gridLetters = State(initialValue: Array(repeating: Array(repeating: "", count: 5), count: 6))
+        _gridColors = State(initialValue: Array(repeating: Array(repeating: .clear, count: 5), count: 6))
+        _currentRow = State(initialValue: 0)
+        _currentGuess = State(initialValue: "")
+    }
+    
+    func startNewGame() {
+        gridLetters = Array(repeating: Array(repeating: "", count: 5), count: 6)
+        gridColors = Array(repeating: Array(repeating: .clear, count: 5), count: 6)
+        currentRow = 0
+        currentGuess = ""
+    }
+    
     func addLetter(_ letter: String) {
         if currentGuess.count < 5 {
             currentGuess += letter
@@ -82,12 +100,39 @@ struct ContentView: View {
         }
     }
     
+    func selectNewTargetWord() {
+        var newWord: String
+        repeat {
+            newWord = wordList.randomElement() ?? "WORLD"
+        } while newWord == targetWord && wordList.count > 1
+        
+        targetWord = newWord
+        isNewGame = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            isNewGame = false
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 8) {
             Text("Target: \(targetWord)")
-                .font(.headline)
-                .foregroundColor(.red)
-                .padding(.bottom, 10)
+                .font(.caption)
+                .foregroundColor(isNewGame ? .green : .gray)
+                .fontWeight(isNewGame ? .bold : .regular)
+                .padding(.bottom, 5)
+            
+            Button("New Game") {
+                selectNewTargetWord()
+                startNewGame()
+            }
+            .font(.title3)
+            .fontWeight(.bold)
+            .foregroundColor(.white)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
+            .background(Color.blue)
+            .cornerRadius(10)
+            .padding(.bottom, 10)
             
             ForEach(0..<6, id: \.self) { row in
                 HStack(spacing: 8) {
