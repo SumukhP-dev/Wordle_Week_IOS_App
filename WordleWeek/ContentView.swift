@@ -63,6 +63,7 @@ struct ContentView: View {
     ]
     
     @State var isNewGame = false
+    @State var errorMessage = ""
     
     init() {
         let randomWord = wordList.randomElement() ?? "WORLD"
@@ -81,10 +82,19 @@ struct ContentView: View {
     }
     
     func addLetter(_ letter: String) {
-        if currentGuess.count < 5 {
-            currentGuess += letter
-            gridLetters[currentRow][currentGuess.count - 1] = letter
+        // Only accept single alphabetic characters
+        guard letter.count == 1,
+              letter.rangeOfCharacter(from: CharacterSet.letters) != nil,
+              currentGuess.count < 5 else {
+            return
         }
+        
+        // Clear any error message when user starts typing
+        errorMessage = ""
+        
+        let uppercaseLetter = letter.uppercased()
+        currentGuess += uppercaseLetter
+        gridLetters[currentRow][currentGuess.count - 1] = uppercaseLetter
     }
     
     func deleteLetter() {
@@ -113,6 +123,44 @@ struct ContentView: View {
         }
     }
     
+    func canSubmitGuess() -> Bool {
+        // Check if current guess is exactly 5 letters
+        return currentGuess.count == 5
+    }
+    
+    func isValidWord(_ word: String) -> Bool {
+        // Check if the word exists in our word list
+        return wordList.contains(word.uppercased())
+    }
+    
+    func submitGuess() {
+        // Clear any previous error message
+        errorMessage = ""
+        
+        // First check if guess is complete
+        guard canSubmitGuess() else {
+            errorMessage = "Word must be exactly 5 letters"
+            return
+        }
+        
+        // Check if it's a valid word
+        guard isValidWord(currentGuess) else {
+            errorMessage = "\(currentGuess) is not a valid word"
+            return
+        }
+        
+        print("Valid guess submitted: \(currentGuess)")
+        
+        // Move to the next row for next guess
+        currentRow += 1
+        currentGuess = ""
+        
+        // Check if we've used all 6 guesses
+        if currentRow >= 6 {
+            errorMessage = "Game over - no more guesses available"
+        }
+    }
+        
     var body: some View {
         VStack(spacing: 8) {
             Text("Target: \(targetWord)")
@@ -143,6 +191,13 @@ struct ContentView: View {
                         )
                     }
                 }
+            }
+            
+            if !errorMessage.isEmpty {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .font(.caption)
+                    .padding(.horizontal)
             }
             
             VStack(spacing: 8) {
@@ -179,13 +234,13 @@ struct ContentView: View {
                 
                 HStack(spacing: 4) {
                     Button("ENTER") {
-                        // Handle enter key
+                        submitGuess()
                     }
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
                     .frame(width: 60, height: 50)
-                    .background(Color.gray.opacity(0.7))
+                    .background(Color.orange.opacity(0.7))
                     .cornerRadius(8)
                     
                     ForEach(["Z", "X", "C", "V", "B", "N", "M"], id: \.self) { letter in
