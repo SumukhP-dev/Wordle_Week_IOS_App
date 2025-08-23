@@ -46,21 +46,18 @@ struct ContentView: View {
     @State var currentGuess = ""
     @State var targetWord = "APPLE"
     @State var wordList = [
-        "APPLE", "BREAD", "CHAIR", "DREAM", "EARTH",
-        "FLAME", "GRAPE", "HOUSE", "IMAGE", "JUICE",
-        "KNIFE", "LIGHT", "MUSIC", "NORTH", "OCEAN",
-        "PAPER", "QUIET", "RIVER", "STONE", "TABLE",
-        "UNDER", "VALUE", "WATER", "YOUNG", "ZEBRA",
-        "BEACH", "CLOUD", "DANCE", "EAGLE", "FRESH",
-        "GIANT", "HEART", "INDEX", "JOLLY", "KIDDO",
-        "LUCKY", "MAGIC", "NOVEL", "ORBIT", "PLANT",
-        "QUACK", "RADIO", "SMILE", "TRUST", "UNITY",
-        "VOICE", "WHEEL", "EXTRA", "YACHT", "ZESTY",
-        "BADGE", "CRAFT", "DODGE", "ENJOY", "FOCUS",
-        "GUIDE", "HAPPY", "IDEAL", "JUMBO", "KNOWN",
-        "LEMON", "MARCH", "NERDY", "OWNER", "PRIME",
-        "QUOTE", "RAPID", "SPARK", "THICK", "URBAN"
+        "APPLE", "BEACH", "CHAIR", "DANCE", "EAGLE",
+        "FLAME", "GRAPE", "HOUSE", "IMAGE", "JOKER",
+        "KNIFE", "LIGHT", "MOUSE", "NIGHT", "OCEAN",
+        "PAPER", "QUEEN", "RADIO", "SNAKE", "TABLE",
+        "UNDER", "VOICE", "WATER", "YOUNG", "ZEBRA",
+        // Test words with duplicate letters
+        "SPEED", "SPELL", "SWEET", "PIZZA", "DADDY"
     ]
+    // Colors for guess feedback
+    let correctColor = Color.green
+    let wrongPositionColor = Color.yellow
+    let incorrectColor = Color.gray
     
     @State var isNewGame = false
     @State var errorMessage = ""
@@ -137,37 +134,102 @@ struct ContentView: View {
         // Clear any previous error message
         errorMessage = ""
         
-        // First check if guess is complete
+        // Validate guess has exactly 5 letters
         guard canSubmitGuess() else {
             errorMessage = "Word must be exactly 5 letters"
             return
         }
         
-        // Check if it's a valid word
-        guard isValidWord(currentGuess) else {
-            errorMessage = "\(currentGuess) is not a valid word"
+        // Validate all characters are letters
+        guard currentGuess.allSatisfy({ $0.isLetter }) else {
+            print("Guess must contain only letters")
             return
         }
         
-        print("Valid guess submitted: \(currentGuess)")
+        print("Evaluating guess: \(currentGuess) against target: \(targetWord)")
         
-        // Move to the next row for next guess
-        currentRow += 1
-        currentGuess = ""
+        // Evaluate the guess and get colors
+        let resultColors = evaluateGuess(currentGuess)
         
-        // Check if we've used all 6 guesses
-        if currentRow >= 6 {
-            errorMessage = "Game over - no more guesses available"
+        // Apply colors to the current row
+        for i in 0..<5 {
+            gridColors[currentRow][i] = resultColors[i]
         }
+        
+        // Validate word exists in world list
+        guard wordList.contains(currentGuess.uppercased()) else {
+            print("\(currentGuess) is not a valid word")
+            // TODO: Show user feedback for invalid word
+            return
+        }
+        
+        // Check if guess is correct
+        if currentGuess == targetWord {
+            print("Congratulations! You guessed the word!")
+            // TODO: Handle win condition
+        } else if currentRow >= 5 {
+            print("Game over! The word was: \(targetWord)")
+            // TODO: Handle loss condition
+        } else {
+            // Move to next row
+            currentRow += 1
+            currentGuess = ""
+            print("Moving to row \(currentRow + 1)")
+        }
+    }
+    
+    func evaluateGuess(_ guess: String) -> [Color] {
+        var colors: [Color] = []
+        let guessArray = Array(guess)
+        let targetArray = Array(targetWord)
+        
+        // First pass: mark exact matches (green)
+        var targetLetterCounts: [Character: Int] = [:]
+        var exactMatches: [Bool] = Array(repeating: false, count: 5)
+        
+        // Count letters in target word and mark exact matches
+        for i in 0..<5 {
+            let targetLetter = targetArray[i]
+            targetLetterCounts[targetLetter, default: 0] += 1
+            
+            if guessArray[i] == targetLetter {
+                exactMatches[i] = true
+                targetLetterCounts[targetLetter]! -= 1
+            }
+        }
+        
+        // Second pass: determine colors
+        for i in 0..<5 {
+            if exactMatches[i] {
+                colors.append(correctColor)
+            } else {
+                let guessLetter = guessArray[i]
+                if let count = targetLetterCounts[guessLetter], count > 0 {
+                    colors.append(wrongPositionColor)
+                    targetLetterCounts[guessLetter]! -= 1
+                } else {
+                    colors.append(incorrectColor)
+                }
+            }
+        }
+        
+        return colors
     }
         
     var body: some View {
         VStack(spacing: 8) {
-            Text("Target: \(targetWord)")
-                .font(.caption)
-                .foregroundColor(isNewGame ? .green : .gray)
-                .fontWeight(isNewGame ? .bold : .regular)
-                .padding(.bottom, 5)
+            // Debugging Information
+            VStack {
+                Text("Target: \(targetWord)")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                if !currentGuess.isEmpty {
+                    Text("Current: \(currentGuess)")
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding(.bottom, 10)
             
             Button("New Game") {
                 selectNewTargetWord()
