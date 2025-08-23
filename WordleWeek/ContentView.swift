@@ -15,11 +15,12 @@ struct LetterTile: View {
         Text(letter.isEmpty ? " " : letter)
             .font(.title)
             .fontWeight(.bold)
-            .foregroundColor(.black)
+            .foregroundColor(backgroundColor == .clear ? .black : .white)
             .frame(width: 60, height: 60)
-            .background(letter.isEmpty ? Color.gray.opacity(0.3) : backgroundColor)
-            .border(Color.gray, width: 2)
+            .background(letter.isEmpty ? Color.gray.opacity(0.2) : backgroundColor)
+            .border(Color.gray.opacity(0.5), width: 2)
             .cornerRadius(5)
+            .animation(.easeInOut(duration: 0.3), value: backgroundColor)
     }
 }
 
@@ -105,6 +106,36 @@ struct ContentView: View {
         if let randomWord = wordList.randomElement() {
             targetWord = randomWord
         }
+    }
+    
+    func compareGuess(_ guess: String) -> [Color] {
+        let guessArray = Array(guess.uppercased())
+        let targetArray = Array(targetWord.uppercased())
+        var colors: [Color] = Array(repeating: .gray, count: 5)
+        var targetLetterCounts: [Character: Int] = [:]
+        
+        // Count occurances of each letter in target word
+        for letter in targetArray {
+            targetLetterCounts[letter, default: 0] += 1
+        }
+        
+        // First pass: Mark correct positions (green)
+        for i in 0..<5 {
+            if guessArray[i] == targetArray[i] {
+                colors[i] = .green
+                targetLetterCounts[guessArray[i]]! -= 1
+            }
+        }
+        
+        // Second pass: Mark wrong positions (yellow)
+        for i in 0..<5 {
+            if colors[i] != .green && targetLetterCounts[guessArray[i], default: 0] > 0 {
+                colors[i] = .yellow
+                targetLetterCounts[guessArray[i]]! -= 1
+            }
+        }
+        
+        return colors
     }
     
     func selectNewTargetWord() {
