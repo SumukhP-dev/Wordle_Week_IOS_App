@@ -8,17 +8,17 @@
 import SwiftUI
 import Combine
 
-var isCurrentGuessFull = false
-var currentRow = 0
-
 class GameViewModel: ObservableObject {
     @Published var gridLetters: [[String]] = Array(repeating: Array(repeating: "", count: 5), count: 6)
     @Published var gridColors: [[Color]] = Array(repeating: Array(repeating: .clear, count: 5), count: 6)
     @Published var currentGuess = ""
-    @Published var targetWord = "WORLD"
     @Published var errorMessage = ""
     @Published var isNewGame = false
-    
+    @Published var isCurrentGuessFull = false
+    @Published var currentRow = 0
+    @Published var targetWord = "WORLD"
+    @Published var gameWon = false
+    @Published var gameLost = false
     
     let wordList = [
         "APPLE", "BEACH", "CHAIR", "DANCE", "EAGLE",
@@ -42,11 +42,15 @@ class GameViewModel: ObservableObject {
     func startNewGame() {
         gridLetters = Array(repeating: Array(repeating: "", count: 5), count: 6)
         gridColors = Array(repeating: Array(repeating: .clear, count: 5), count: 6)
+        
         currentRow = 0
         currentGuess = ""
         selectRandomWord()
         errorMessage = ""
         isNewGame = true
+        gameWon = false
+        gameLost = false
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.isNewGame = false
         }
@@ -73,12 +77,14 @@ class GameViewModel: ObservableObject {
     }
     
     func deleteLetter() {
+        guard !gameWon && !gameLost else { return }
+        
         if currentGuess.count > 0 {
             gridLetters[currentRow][currentGuess.count - 1] = ""
             currentGuess.removeLast()
         }
         
-        isCurrentGuessFull = canSubmitGuess()
+        isCurrentGuessFull = canSubmitGuess()   
     }
     
     func selectRandomWord() {
@@ -180,6 +186,7 @@ class GameViewModel: ObservableObject {
             // Move to next row
             currentRow += 1
             currentGuess = ""
+            isCurrentGuessFull = canSubmitGuess()
             print("Moving to row \(currentRow + 1)")
         }
     }

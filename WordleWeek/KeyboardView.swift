@@ -19,9 +19,9 @@ struct KeyboardView: View {
                     }
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(gameWon ? .gray : (isCurrentGuessFull ? .gray : .black))
+                    .foregroundColor(viewModel.gameWon ? .gray : (viewModel.isCurrentGuessFull ? .gray : .black))
                     .frame(width: 35, height: 50)
-                    .background(gameWon ? Color.gray.opacity(0.1) : (isCurrentGuessFull ? Color.gray.opacity(0.1) : Color.gray.opacity(0.3)))
+                    .background(viewModel.gameWon ? Color.gray.opacity(0.1) : (viewModel.isCurrentGuessFull ? Color.gray.opacity(0.1) : Color.gray.opacity(0.3)))
                     .cornerRadius(8)
                 }
             }
@@ -33,9 +33,9 @@ struct KeyboardView: View {
                     }
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(gameWon ? .gray : (isCurrentGuessFull ? .gray : .black))
+                    .foregroundColor(viewModel.gameWon ? .gray : (viewModel.isCurrentGuessFull ? .gray : .black))
                     .frame(width: 35, height: 50)
-                    .background(gameWon ? Color.gray.opacity(0.1) : (isCurrentGuessFull ? Color.gray.opacity(0.1) : Color.gray.opacity(0.3)))
+                    .background(viewModel.gameWon ? Color.gray.opacity(0.1) : (viewModel.isCurrentGuessFull ? Color.gray.opacity(0.1) : Color.gray.opacity(0.3)))
                     .cornerRadius(8)
                 }
             }
@@ -47,38 +47,38 @@ struct KeyboardView: View {
                     }
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(gameWon ? .gray : (isCurrentGuessFull ? .gray : .black))
+                    .foregroundColor(viewModel.gameWon ? .gray : (viewModel.isCurrentGuessFull ? .gray : .black))
                     .frame(width: 35, height: 50)
-                    .background(gameWon ? Color.gray.opacity(0.1) : (isCurrentGuessFull ? Color.gray.opacity(0.1) : Color.gray.opacity(0.3)))
+                    .background(viewModel.gameWon ? Color.gray.opacity(0.1) : (viewModel.isCurrentGuessFull ? Color.gray.opacity(0.1) : Color.gray.opacity(0.3)))
                     .cornerRadius(8)
                 }
                 
                 Button("ENTER") {
-                    if !gameWon {
+                    if !viewModel.gameWon {
                         viewModel.submitGuess()
                     }
                 }
                 .font(.caption)
                 .fontWeight(.bold)
-                .foregroundColor(gameWon ? .gray : .white)
+                .foregroundColor(viewModel.gameWon ? .gray : .white)
                 .frame(width: 60, height: 50)
-                .background(gameWon ? Color.gray.opacity(0.1) : (isCurrentGuessFull ? Color.orange : Color.orange.opacity(0.3)))
+                .background(viewModel.gameWon ? Color.gray.opacity(0.1) : (viewModel.isCurrentGuessFull ? Color.orange : Color.orange.opacity(0.3)))
                 .cornerRadius(8)
-                .disabled(gameWon || !isCurrentGuessFull)
+                .disabled(viewModel.gameWon || !viewModel.isCurrentGuessFull)
 
                 
                 Button("DEL") {
-                    if !gameWon {
+                    if !viewModel.gameWon {
                         viewModel.deleteLetter()
                     }
                 }
                 .font(.caption)
                 .fontWeight(.bold)
-                .foregroundColor(gameWon ? .gray : .black)
+                .foregroundColor(viewModel.gameWon ? .gray : .black)
                 .frame(width: 60, height: 50)
-                .background(gameWon ? Color.gray.opacity(0.1) : Color.red.opacity(0.7))
+                .background(viewModel.gameWon ? Color.gray.opacity(0.1) : Color.red.opacity(0.7))
                 .cornerRadius(8)
-                .disabled(gameWon)
+                .disabled(viewModel.gameWon)
             }
         }
         .padding(.top, 20)

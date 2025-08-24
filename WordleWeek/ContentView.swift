@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-var gameWon = false
-var gameLost = false
-
 struct ContentView: View {
     @StateObject private var viewModel = GameViewModel()
 
@@ -20,10 +17,18 @@ struct ContentView: View {
                 Text("Target: \(viewModel.targetWord)")
                     .font(.caption)
                     .foregroundColor(.gray)
+                
                 if !viewModel.currentGuess.isEmpty {
                     Text("Current: \(viewModel.currentGuess)")
                         .font(.caption)
                         .foregroundColor(.blue)
+                }
+                
+                if viewModel.isNewGame {
+                    Text("New game started!")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                        .padding(.bottom, 5)
                 }
             }
             .padding(.bottom, 10)
@@ -48,12 +53,12 @@ struct ContentView: View {
                             backgroundColor: viewModel.gridColors[row][col]
                         )
                     }
-                    .scaleEffect(gameWon && row == currentRow - 1 ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: gameWon)
+                    .scaleEffect(viewModel.gameWon && row == viewModel.currentRow - 1 ? 1.1 : 1.0)
+                    .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: viewModel.gameWon)
                 }
             }
             
-            if gameWon {
+            if viewModel.gameWon {
                 Text("🎉 Congratulations! You guessed it! 🎉")
                     .font(.title2)
                     .fontWeight(.bold)
@@ -62,6 +67,19 @@ struct ContentView: View {
                     .background(Color.green.opacity(0.1))
                     .cornerRadius(10)
                     .padding(.vertical, 10)
+            }
+            
+            if viewModel.gameLost {
+                VStack {
+                    Text("Game Over")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.secondary)
+                    Text("The word was: \(viewModel.targetWord)")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
             }
             
             if !viewModel.errorMessage.isEmpty {
