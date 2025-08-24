@@ -17,8 +17,13 @@ class GameViewModel: ObservableObject {
     @Published var isCurrentGuessFull = false
     @Published var currentRow = 0
     @Published var targetWord = "WORLD"
+    
     @Published var gameWon = false
     @Published var gameLost = false
+    
+    @Published var animatingTiles: Set<String> = []
+    @Published var animatingDelay: Double = 0.0
+    @Published var tileKey: String = ""
     
     let wordList = [
         "APPLE", "BEACH", "CHAIR", "DANCE", "EAGLE",
@@ -52,6 +57,10 @@ class GameViewModel: ObservableObject {
         gameLost = false
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            // Clear all ongoing animations
+            self.animatingTiles.removeAll()
+            self.animatingDelay = 0.0
+            
             self.isNewGame = false
         }
     }
@@ -73,15 +82,35 @@ class GameViewModel: ObservableObject {
         currentGuess += uppercaseLetter
         gridLetters[currentRow][currentGuess.count - 1] = uppercaseLetter
         
+        // Animate the tile that just received a letter
+        tileKey = "\(currentRow)-\(currentGuess.count - 1)"
+        animatingTiles.insert(tileKey)
+        
+        // Stop animation after a brief moment
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            self.animatingTiles.remove(self.tileKey)
+        }
+        
         isCurrentGuessFull = canSubmitGuess()
     }
     
     func deleteLetter() {
         guard !gameWon && !gameLost else { return }
         
-        if currentGuess.count > 0 {
-            gridLetters[currentRow][currentGuess.count - 1] = ""
-            currentGuess.removeLast()
+        guard currentGuess.count > 0 else { return }
+        
+        // Animate the tile that just received a letter
+        tileKey = "\(currentRow)-\(currentGuess.count - 1)"
+        animatingTiles.insert(tileKey)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.gridLetters[self.currentRow][self.currentGuess.count - 1] = ""
+            self.currentGuess.removeLast()
+            
+            // Stop animation after a brief moment
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.animatingTiles.remove(self.tileKey)
+            }
         }
         
         isCurrentGuessFull = canSubmitGuess()   
@@ -139,6 +168,22 @@ class GameViewModel: ObservableObject {
         return wordList.contains(word.uppercased())
     }
     
+    func celebrateWin() {
+        // Animate all tiles in the winning row
+        for i in 0..<5 {
+            let tileKey = "\(currentRow)-\(i)"
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.1) {
+                self.animatingTiles.insert(tileKey)
+                
+                // Longer celebration animation
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    self.animatingTiles.remove(tileKey)
+                }
+            }
+        }
+    }
+    
     func submitGuess() {
         // Clear any previous error message
         errorMessage = ""
@@ -161,6 +206,18 @@ class GameViewModel: ObservableObject {
         
         // Apply colors to the current row
         for i in 0..<5 {
+            let tileKey = "\(currentRow)-\(i)"
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.1) {
+                self.animatingTiles.insert(tileKey)
+                self.gridColors[self.currentRow][i] = resultColors[i]
+                
+                // Stop animation after a short delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self.animatingTiles.remove(tileKey)
+                }
+            }
+            
             gridColors[currentRow][i] = resultColors[i]
         }
         
@@ -175,11 +232,14 @@ class GameViewModel: ObservableObject {
         if currentGuess.uppercased() == targetWord.uppercased() {
             gameWon = true
             print("Congratulations! You guessed the word!")
-            // TODO: Handle win condition
+            
+            // Add celebration after colors are set
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                self.celebrateWin()
+            }
         } else if currentRow >= 5 {
             gameLost = true
             print("Game over! The word was: \(targetWord)")
-            // TODO: Handle loss condition
         }
         
         if !gameWon {

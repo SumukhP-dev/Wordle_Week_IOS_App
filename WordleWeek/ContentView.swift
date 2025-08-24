@@ -48,9 +48,10 @@ struct ContentView: View {
             ForEach(0..<6, id: \.self) { row in
                 HStack(spacing: 8) {
                     ForEach(0..<5, id: \.self)  { col in
-                        LetterTile(
+                        AnimatedLetterTile(
                             letter: viewModel.gridLetters[row][col],
-                            backgroundColor: viewModel.gridColors[row][col]
+                            backgroundColor: viewModel.gridColors[row][col],
+                            isAnimating: viewModel.animatingTiles.contains("\(row)-\(col)")
                         )
                     }
                     .scaleEffect(viewModel.gameWon && row == viewModel.currentRow - 1 ? 1.1 : 1.0)
