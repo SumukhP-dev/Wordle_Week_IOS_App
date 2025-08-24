@@ -9,89 +9,103 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = GameViewModel()
-
+    @State private var isPressed = false
+    
     var body: some View {
-        VStack(spacing: 8) {
-            // Debugging Information
-            VStack {
-                Text("Target: \(viewModel.targetWord)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                
-                if !viewModel.currentGuess.isEmpty {
-                    Text("Current: \(viewModel.currentGuess)")
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                }
-                
-                if viewModel.isNewGame {
-                    Text("New game started!")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                        .padding(.bottom, 5)
-                }
-            }
-            .padding(.bottom, 10)
-            
-            Button("New Game") {
-                viewModel.startNewGame()
-            }
-            .font(.title3)
-            .fontWeight(.bold)
-            .foregroundColor(.white)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 8)
-            .background(Color.blue)
-            .cornerRadius(10)
-            .padding(.bottom, 10)
-            
-            ForEach(0..<6, id: \.self) { row in
-                HStack(spacing: 8) {
-                    ForEach(0..<5, id: \.self)  { col in
-                        AnimatedLetterTile(
-                            letter: viewModel.gridLetters[row][col],
-                            backgroundColor: viewModel.gridColors[row][col],
-                            isAnimating: viewModel.animatingTiles.contains("\(row)-\(col)")
-                        )
-                    }
-                    .scaleEffect(viewModel.gameWon && row == viewModel.currentRow - 1 ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: viewModel.gameWon)
-                }
-            }
-            
-            if viewModel.gameWon {
-                Text("🎉 Congratulations! You guessed it! 🎉")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.green)
-                    .padding()
-                    .background(Color.green.opacity(0.1))
-                    .cornerRadius(10)
-                    .padding(.vertical, 10)
-            }
-            
-            if viewModel.gameLost {
+        VStack(spacing: 0) {
+            VStack(spacing: 0) {
+                // Title area with padding
                 VStack {
-                    Text("Game Over")
-                        .font(.title)
+                    Text("WordleWeek")
+                        .font(.custom("SF Pro Display", size: 36))
                         .fontWeight(.bold)
-                        .foregroundColor(.secondary)
-                    Text("The word was: \(viewModel.targetWord)")
-                        .font(.title2)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.gray)
+
+                    // Debugging Information
+                    Text("Target: \(viewModel.targetWord)")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    
+                    if !viewModel.currentGuess.isEmpty {
+                        Text("Current: \(viewModel.currentGuess)")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                    
+                    if viewModel.isNewGame {
+                        Text("New game started!")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                    }
                 }
-                .padding()
+                
+                Button("New Game") {
+                    viewModel.startNewGame()
+                }
+                .font(.system(size: 18, weight: .semibold))
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .frame(height: 50)
+                .frame(minWidth: 120)
+                .padding(.horizontal, 20)
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 0.2, green: 0.2, blue: 0.2),
+                            Color(red: 0.2, green: 0.2, blue: 0.2)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .cornerRadius(25)
+                .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
+                .scaleEffect(isPressed ? 0.95 : 1.0)
+                .animation(.easeInOut(duration: 0.1), value: isPressed)
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.1)) {
+                        isPressed = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isPressed = false
+                        viewModel.startNewGame()
+                    }
+                }
+                
+                // Game grid with optimized spacing
+                VStack(spacing: 6) {
+                    ForEach(0..<6, id: \.self) { row in
+                        HStack(spacing: 6) {
+                            ForEach(0..<5, id: \.self)  { col in
+                                AnimatedLetterTile(
+                                    letter: viewModel.gridLetters[row][col],
+                                    backgroundColor: viewModel.gridColors[row][col],
+                                    isAnimating: viewModel.animatingTiles.contains("\(row)-\(col)")
+                                )
+                            }
+                            .scaleEffect(viewModel.gameWon && row == viewModel.currentRow - 1 ? 1.1 : 1.0)
+                            .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: viewModel.gameWon)
+                        }
+                    }
+                }
+                
+                Spacer(minLength: 5)
+                
+                
+                GameStatusMessage(viewModel: viewModel)
+                
+                KeyboardView(viewModel: viewModel)
             }
-            
-            if !viewModel.errorMessage.isEmpty {
-                Text(viewModel.errorMessage)
-                    .foregroundColor(.red)
-                    .font(.caption)
-                    .padding(.horizontal)
-            }
-            
-            KeyboardView(viewModel: viewModel)
         }
-        .padding()
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(red: 0.2, green: 0.2, blue: 0.2),
+                    Color(red: 0.2, green: 0.2, blue: 0.2)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
     }
 }
